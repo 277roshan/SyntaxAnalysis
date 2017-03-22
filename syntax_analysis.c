@@ -45,6 +45,7 @@ int main() {
 		printf("ERROR - cannot open front.in \n"); else {
 			getChar(); do {
 				lex();
+				expr();
 			} 
 			while (nextToken != EOF);
 		} 
@@ -97,7 +98,8 @@ while (isspace(nextChar))
 	getChar();
 	} /*****************************************************/
 	/* lex - a simple lexical analyzer for arithmetic
-	expressions */ int lex() {
+	expressions */ 
+int lex() {
 lexLen = 0; getNonBlank();
 switch (charClass) {
 		/* Parse identifiers */ case LETTER:
@@ -128,6 +130,7 @@ switch (charClass) {
 	} /* End of switch */
 			printf("Next token is: %d, Next lexeme is %s\n",
 				nextToken, lexeme); return nextToken;
+
 	}  /* End of function lex */
 
 
