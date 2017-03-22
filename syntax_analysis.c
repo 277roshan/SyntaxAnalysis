@@ -9,6 +9,7 @@ char nextChar;
 int lexLen;
 int token;
 int nextToken;
+int place_count=0;
 FILE *in_fp, *fopen();
 
 void term();
@@ -34,9 +35,6 @@ int lex();
 	#define DIV_OP 24
 	#define LEFT_PAREN 25
 	#define RIGHT_PAREN 26
-
-
-
 	/******************************************************/
 	/* main driver */
 int main() {
@@ -83,7 +81,9 @@ else
 }
 	/*****************************************************/
 	/* getChar - a function to get the next character of
-	input and determine its character class */ void getChar() {
+	input and determine its character class */ 
+void getChar() {
+	place_count++;
 if ((nextChar = getc(in_fp)) != EOF) { if (isalpha(nextChar))
 	charClass = LETTER;
 	else if (isdigit(nextChar))
@@ -190,13 +190,13 @@ expr();
 if (nextToken == RIGHT_PAREN)
 lex();
 else					
-							printf("%d Not an id, an integer literal or a left parenthesis\n", nextToken);
+							
                            error();
                        }  /* End of if (nextToken == ... */
                    /* It was not an id, an integer literal, or a left
                       parenthesis */
 else
-						printf("%d Error detected\n", nextToken);
+						
                          error();
                      }  /* End of else */
                      printf("Exit <factor>\n");;
@@ -204,6 +204,6 @@ else
 
 
 void error(){
-	printf("%sasdfasdfasdfasdfsadf\n","yo");
+	printf("%sError detected at %d character\n",lexeme, place_count-1);
 }
 
