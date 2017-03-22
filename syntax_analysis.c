@@ -41,11 +41,13 @@ int lex();
 	/* main driver */
 int main() {
 	/* Open the input data file and process its contents */ 
+	
 	if ((in_fp = fopen("front.in", "r")) == NULL)
 		printf("ERROR - cannot open front.in \n"); else {
 			getChar(); do {
 				lex();
 				expr();
+			
 			} 
 			while (nextToken != EOF);
 		} 
@@ -145,8 +147,10 @@ void expr()
 	term();
            /* As long as the next token is + or -, get
               the next token and parse the next term */
-	while (nextToken == ADD_OP || nextToken == SUB_OP) { lex();
-		term(); }
+	while (nextToken == ADD_OP || nextToken == SUB_OP) { 
+		lex();
+		term(); 
+	}
 		printf("Exit <expr>\n");
 }  /* End of function expr */
 
@@ -185,12 +189,14 @@ lex();
 expr();
 if (nextToken == RIGHT_PAREN)
 lex();
-else
+else					
+							printf("%d Not an id, an integer literal or a left parenthesis\n", nextToken);
                            error();
                        }  /* End of if (nextToken == ... */
                    /* It was not an id, an integer literal, or a left
                       parenthesis */
 else
+						printf("%d Error detected\n", nextToken);
                          error();
                      }  /* End of else */
                      printf("Exit <factor>\n");;
@@ -198,6 +204,6 @@ else
 
 
 void error(){
-	printf("%s","yo");
+	printf("%sasdfasdfasdfasdfsadf\n","yo");
 }
 
