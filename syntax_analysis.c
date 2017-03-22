@@ -37,10 +37,13 @@ int lex();
 	#define RIGHT_PAREN 26
 	/******************************************************/
 	/* main driver */
-int main() {
+int main(int argc, char *argv[]) {
 	/* Open the input data file and process its contents */ 
-	
-	if ((in_fp = fopen("front.in", "r")) == NULL)
+
+
+   if( argc == 2 ) {
+      printf("The argument supplied is %s\n", argv[1]);
+      if ((in_fp = fopen(argv[1], "r")) == NULL)
 		printf("ERROR - cannot open front.in \n"); else {
 			getChar(); do {
 				lex();
@@ -50,6 +53,17 @@ int main() {
 			while (nextToken != EOF);
 		} 
 	}
+   
+   else if( argc > 2 ) {
+      printf("Too many arguments supplied.\n");
+   }
+   else {
+      printf("One argument expected.\n");
+
+   }
+}
+	
+	
 
 
 	/*****************************************************/ /* lookup - a function to lookup operators and parentheses
