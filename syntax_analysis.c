@@ -204,6 +204,6 @@ else
 
 
 void error(){
-	printf("%sError detected at %d character\n",lexeme, place_count-1);
+	printf("Lexeme with error: %s ******* \nError detected at %d character ********\n",lexeme, place_count-1);
 }
 
