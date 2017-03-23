@@ -68,12 +68,11 @@ int main(int argc, char *argv[]) {
 					memset(lexeme_place_count,0,9999);
 					memset(lexeme,0,99);
 					memset(previous_lexeme,0,99);
+					getChar();
 				}
-				getChar();
+				
 
-				if (charClass == EOF){
-					nextToken = EOF;
-				}
+				
 				
 			} 
 			while (nextToken != EOF);
@@ -355,7 +354,6 @@ void error(){
 	else if(nextToken == EOF)
 	{
 		for (int y = 0; y < 100; y++){
-			
 			if (previous_lexeme[y] == 0){
 				break;
 			}
