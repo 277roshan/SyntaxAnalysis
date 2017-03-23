@@ -2,6 +2,8 @@
 	                                arithmetic expressions */
 	                   #include <stdio.h>
 	                   #include <ctype.h>
+						#include <string.h>
+
 	/* Global declarations */ /* Variables */
 int charClass;
 char lexeme [100];
@@ -12,20 +14,24 @@ int token;
 int nextToken;
 char lexeme_place_count [10000];
 int place_count = 0;
+int place_count_temp = 0;
 FILE *in_fp, *fopen();
 
-void term();
-void expr();
-void factor();
+int term();
+int expr();
+int factor();
 void error();
 
-	/* Function declarations */ void addChar();
+	/* Function declarations */ 
+void addChar();
 void getChar();
 void getNonBlank();
+void getUpToNextLine();
 int lex();
 	/* Character classes */
 	#define LETTER 0
 	#define DIGIT 1
+	#define ENDLINE 2
 	#define UNKNOWN 99
 	/* Token codes */
 	#define INT_LIT 10
@@ -49,13 +55,30 @@ int main(int argc, char *argv[]) {
 		printf("ERROR - cannot open front.in \n"); else {
 			getChar(); do {
 				lex();
-				expr();
+				if (expr() == -10){
+					getUpToNextLine();
+					place_count_temp = 0;
+					memset(lexeme_place_count,0,9999);
+					memset(lexeme,0,99);
+					memset(previous_lexeme,0,99);
+
+				}
 			
+				if (nextToken == ENDLINE){
+					memset(lexeme_place_count,0,9999);
+					memset(lexeme,0,99);
+					memset(previous_lexeme,0,99);
+				}
+				getChar();
+
+				if (charClass == EOF){
+					nextToken = EOF;
+				}
+				
 			} 
 			while (nextToken != EOF);
 		} 
 	}
-   
    else if( argc > 2 ) {
       printf("Too many arguments supplied.\n");
    }
@@ -64,12 +87,10 @@ int main(int argc, char *argv[]) {
 
    }
 }
-	
-	
-
-
 	/*****************************************************/ /* lookup - a function to lookup operators and parentheses
-	and return the token */ int lookup(char ch) {
+	and return the token */ 
+
+int lookup(char ch) {
 	switch (ch) { case '(':
 	addChar();
 	nextToken = LEFT_PAREN; break;
@@ -85,29 +106,45 @@ int main(int argc, char *argv[]) {
 	nextToken = MULT_OP; break;
 	case '/':
 	addChar(); nextToken = DIV_OP; break;
+	case '\n':
+	addChar(); nextToken = ENDLINE; break;
 	default: addChar(); nextToken = EOF; break;
 }
 return nextToken; }
 
-	/*****************************************************/ /* addChar - a function to add nextChar to lexeme */ void addChar() {
-if (lexLen <= 98) { lexeme[lexLen++] = nextChar; lexeme[lexLen] = 0;
+	/*****************************************************/ /* addChar - a function to add nextChar to lexeme */ 
+void addChar() {
+if (lexLen <= 98) { 
+	lexeme[lexLen++] = nextChar; 
+	lexeme[lexLen] = 0;
+
 }
 else
 	printf("Error - lexeme is too long \n");
 }
+
 	/*****************************************************/
 	/* getChar - a function to get the next character of
 	input and determine its character class */ 
 void getChar() {
 	place_count++;
-	
-if ((nextChar = getc(in_fp)) != EOF) { if (isalpha(nextChar))
-	charClass = LETTER;
+	place_count_temp++;
+
+
+nextChar = getc(in_fp);
+
+if (nextChar =='\n'){
+	charClass = ENDLINE;
+}
+			
+else if (nextChar!= EOF) { 
+	if (isalpha(nextChar))
+		charClass = LETTER;
 	else if (isdigit(nextChar))
 		charClass = DIGIT;
 	else charClass = UNKNOWN;
 
-	lexeme_place_count[place_count] = nextChar;
+	lexeme_place_count[place_count_temp] = nextChar;
 
 }
 else
@@ -115,21 +152,43 @@ else
 }
 	/*****************************************************/
 	/* getNonBlank - a function to call getChar until it
-	returns a non-whitespace character */ void getNonBlank() {
+	returns a non-whitespace character */ 
+void getNonBlank() {
+	if (nextChar =='\n'){
+		charClass = ENDLINE;
+		return;}
 while (isspace(nextChar)) 
-	getChar();
+		getChar();
 	} /*****************************************************/
 	/* lex - a simple lexical analyzer for arithmetic
 	expressions */ 
-int lex() {
-lexLen = 0; getNonBlank();
-for (int h=0; h<100; h++){
-		previous_lexeme[h] = lexeme[h];
-	}
-switch (charClass) {
 
+
+void getUpToNextLine() {
+	place_count++;
+	while (1){
+		if (nextChar == '\n'){
+			break;
+		}
+		
+		getChar();
+		if (charClass == EOF){
+			break;
+		}
+	nextToken = ENDLINE;
+}
+	} 
 	
- 
+
+int lex() {
+
+int g = 0;
+for (int g; g<lexLen;g++){
+	previous_lexeme[g] = lexeme[g];
+}
+lexLen = 0; 
+getNonBlank();
+switch (charClass) {
 		/* Parse identifiers */ case LETTER:
 	addChar();
 	getChar();
@@ -137,7 +196,8 @@ switch (charClass) {
 		addChar();
 		getChar(); }
 		nextToken = IDENT; break;
-	/* Parse integer literals */ case DIGIT:
+	/* Parse integer literals */ 
+		case DIGIT:
 		addChar();
 		getChar();
 		while (charClass == DIGIT) {
@@ -145,22 +205,35 @@ switch (charClass) {
 			getChar(); }
 			nextToken = INT_LIT; break;
 	/* Parentheses and operators */ case UNKNOWN:
-			lookup(nextChar); getChar();
+			lookup(nextChar); 
+			getChar();
 			break;
 	/* EOF */
+			case ENDLINE:
+
+			place_count_temp = 0;
+			nextToken = ENDLINE;
+			lexeme[0] = 'E';
+			lexeme[1] = 'O';
+			lexeme[2] = 'F';
+			lexeme[3] = 0;
+			break;
 			case EOF:
+			g=0;
+			place_count_temp = 0;
 			nextToken = EOF;
-
-
-
 			lexeme[0] = 'E';
 			lexeme[1] = 'O';
 			lexeme[2] = 'F';
 			lexeme[3] = 0;
 			break;
 	} /* End of switch */
+
 			printf("Next token is: %d, Next lexeme is %s\n",
 				nextToken, lexeme); return nextToken;
+
+
+
 
 	}  /* End of function lex */
 
@@ -169,18 +242,23 @@ switch (charClass) {
 	                      Parses strings in the language generated by the rule:
 	                      <expr> -> <term> {(+ | -) <term>}
 	                      */
-void expr() 
+int expr() 
 { 
 	printf("Enter <expr>\n");
            /* Parse the first term */
-	term();
+	if (term() == -10){
+		return -10;
+	}
            /* As long as the next token is + or -, get
               the next token and parse the next term */
 	while (nextToken == ADD_OP || nextToken == SUB_OP) { 
 		lex();
-		term(); 
+		if (term() == -10){
+		return -10;
+	}
 	}
 		printf("Exit <expr>\n");
+		return 1;
 }  /* End of function expr */
 
 
@@ -188,22 +266,30 @@ void expr()
    Parses strings in the language generated by the rule:
    <term> -> <factor> {(* | /) <factor>)
    */
-void term() 
+int term() 
 { printf("Enter <term>\n");
 /* Parse the first factor */
-factor();
+ if (factor() == -10){
+ 	return -10;
+ }
+ 
 /* As long as the next token is * or /, get the
 next token and parse the next factor */
-while (nextToken == MULT_OP || nextToken == DIV_OP) { lex();
-	factor(); }
+while (nextToken == MULT_OP || nextToken == DIV_OP) { 
+	lex();
+	if (factor() == -10){
+ 	return -10;
+ }
+}
 	printf("Exit <term>\n");
+	return 1;
 }  /* End of function term */
 
 /* factor
    Parses strings in the language generated by the rule:
    <factor> -> id | int_constant | ( <expr )
    */
-void factor() {
+int factor() {
 printf("Enter <factor>\n");
 /* Determine which RHS */
 if (nextToken == IDENT || nextToken == INT_LIT)
@@ -215,36 +301,65 @@ lex();
 else {
 if (nextToken == LEFT_PAREN) {
 lex();
-expr();
+
+if (expr() == -10){
+	return -10;
+}
+
+
+
 if (nextToken == RIGHT_PAREN)
 lex();
 else					
 							
                            error();
+                       	return -10;
+                       
                        }  /* End of if (nextToken == ... */
                    /* It was not an id, an integer literal, or a left
                       parenthesis */
 else
 						
                          error();
+                     return -10;
+           
+
                      }  /* End of else */
-                     printf("Exit <factor>\n");;
+                     printf("Exit <factor>\n");
+                    return 1;
+                     
                    }  /* End of function factor */
 
 
 void error(){
-	
-
-
 	for(int u=0; u<place_count; u++){
 		printf("%c", lexeme_place_count[u]);
 	}
+
 	printf("\n");
+	printf("Error at: ");
 
 
-	if (nextToken == -1){
-		printf("Error at ");
+
+	if (nextToken == ENDLINE){
 		for (int y = 0; y < 100; y++){
+			
+			if (previous_lexeme[y] == 0){
+				break;
+			}
+
+			printf("%c",previous_lexeme[y]);
+		}
+		printf("\n");
+	}
+	else if(nextToken == EOF)
+	{
+		for (int y = 0; y < 100; y++){
+			
+			if (previous_lexeme[y] == 0){
+				break;
+			}
+
 			printf("%c",previous_lexeme[y]);
 		}
 		printf("\n");
@@ -252,14 +367,8 @@ void error(){
 	else{
 		printf("%s\n",lexeme);
 	}
-	
-		
+	printf("%s\n",lexeme);
 	
 
-
-	
-	
-	
-	
 }
 
