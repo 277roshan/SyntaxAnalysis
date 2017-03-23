@@ -5,11 +5,13 @@
 	/* Global declarations */ /* Variables */
 int charClass;
 char lexeme [100];
+char previous_lexeme[100];
 char nextChar;
 int lexLen;
 int token;
 int nextToken;
-int place_count=0;
+char lexeme_place_count [10000];
+int place_count = 0;
 FILE *in_fp, *fopen();
 
 void term();
@@ -98,11 +100,15 @@ else
 	input and determine its character class */ 
 void getChar() {
 	place_count++;
+	
 if ((nextChar = getc(in_fp)) != EOF) { if (isalpha(nextChar))
 	charClass = LETTER;
 	else if (isdigit(nextChar))
 		charClass = DIGIT;
 	else charClass = UNKNOWN;
+
+	lexeme_place_count[place_count] = nextChar;
+
 }
 else
 	charClass = EOF;
@@ -117,7 +123,13 @@ while (isspace(nextChar))
 	expressions */ 
 int lex() {
 lexLen = 0; getNonBlank();
+for (int h=0; h<100; h++){
+		previous_lexeme[h] = lexeme[h];
+	}
 switch (charClass) {
+
+	
+ 
 		/* Parse identifiers */ case LETTER:
 	addChar();
 	getChar();
@@ -138,6 +150,9 @@ switch (charClass) {
 	/* EOF */
 			case EOF:
 			nextToken = EOF;
+
+
+
 			lexeme[0] = 'E';
 			lexeme[1] = 'O';
 			lexeme[2] = 'F';
@@ -218,6 +233,33 @@ else
 
 
 void error(){
-	printf("Lexeme with error: %s ******* \nError detected at %d character ********\n",lexeme, place_count-1);
+	
+
+
+	for(int u=0; u<place_count; u++){
+		printf("%c", lexeme_place_count[u]);
+	}
+	printf("\n");
+
+
+	if (nextToken == -1){
+		printf("Error at ");
+		for (int y = 0; y < 100; y++){
+			printf("%c",previous_lexeme[y]);
+		}
+		printf("\n");
+	}
+	else{
+		printf("%s\n",lexeme);
+	}
+	
+		
+	
+
+
+	
+	
+	
+	
 }
 
