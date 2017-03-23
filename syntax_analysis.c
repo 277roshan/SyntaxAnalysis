@@ -16,6 +16,7 @@ char lexeme_place_count [10000];
 int place_count = 0;
 int place_count_temp = 0;
 FILE *in_fp, *fopen();
+int errorcheck = 0;
 
 int term();
 int expr();
@@ -26,7 +27,7 @@ void error();
 void addChar();
 void getChar();
 void getNonBlank();
-void getUpToNextLine();
+int getUpToNextLine();
 int lex();
 	/* Character classes */
 	#define LETTER 0
@@ -54,15 +55,19 @@ int main(int argc, char *argv[]) {
       if ((in_fp = fopen(argv[1], "r")) == NULL)
 		printf("ERROR - cannot open front.in \n"); else {
 			getChar(); do {
+				errorcheck = 0;
 				lex();
 				if (expr() == -10){
-					getUpToNextLine();
+					if (getUpToNextLine() == -10){
+						return 1;
+					}
 					place_count_temp = 0;
 					memset(lexeme_place_count,0,9999);
 					memset(lexeme,0,99);
 					memset(previous_lexeme,0,99);
-
 				}
+
+
 			
 				if (nextToken == ENDLINE){
 					memset(lexeme_place_count,0,9999);
@@ -163,7 +168,7 @@ while (isspace(nextChar))
 	expressions */ 
 
 
-void getUpToNextLine() {
+int getUpToNextLine() {
 	place_count++;
 	while (1){
 		if (nextChar == '\n'){
@@ -172,15 +177,16 @@ void getUpToNextLine() {
 		
 		getChar();
 		if (charClass == EOF){
+			return -10;
 			break;
 		}
 	nextToken = ENDLINE;
-}
+	}
+	return 1;
 	} 
 	
 
 int lex() {
-
 int g = 0;
 for (int g; g<lexLen;g++){
 	previous_lexeme[g] = lexeme[g];
@@ -229,7 +235,8 @@ switch (charClass) {
 	} /* End of switch */
 
 			printf("Next token is: %d, Next lexeme is %s\n",
-				nextToken, lexeme); return nextToken;
+				nextToken, lexeme); 
+			return nextToken;
 
 
 
@@ -307,6 +314,8 @@ if (expr() == -10){
 
 
 
+
+
 if (nextToken == RIGHT_PAREN)
 lex();
 else					
@@ -331,6 +340,7 @@ else
 
 
 void error(){
+	errorcheck = 1;
 	for(int u=0; u<place_count; u++){
 		printf("%c", lexeme_place_count[u]);
 	}
@@ -353,20 +363,17 @@ void error(){
 	}
 	else if(nextToken == EOF)
 	{
-		for (int y = 0; y < 100; y++){
-			if (previous_lexeme[y] == 0){
+		for (int y = place_count; 1; y--){
+			if (lexeme_place_count[y] == ' '){
 				break;
 			}
 
-			printf("%c",previous_lexeme[y]);
+			printf("%c",lexeme_place_count[y]);
 		}
 		printf("\n");
 	}
 	else{
 		printf("%s\n",lexeme);
 	}
-	printf("%s\n",lexeme);
-	
-
 }
 
