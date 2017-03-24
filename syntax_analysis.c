@@ -343,20 +343,7 @@ void error(){
 	printf("\n");
 	printf("Error at: ");
 
-	// print where the error is for ENDLINE case
-	if (nextToken == ENDLINE){
-		for (int y = 0; y < 100; y++){
-			
-			if (previous_lexeme[y] == 0){
-				break;
-			}
-
-			printf("%c",previous_lexeme[y]);
-		}
-		printf("\n");
-	}
-	// For EOF print one lexeme before the last one
-	else if(nextToken == EOF)
+	if(nextToken == EOF || nextToken == ENDLINE)
 	{
 		for (int y = place_count; 1; y--){
 			if (lexeme_place_count[y] == ' '){
