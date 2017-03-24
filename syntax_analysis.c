@@ -343,6 +343,7 @@ void error(){
 	printf("\n");
 	printf("Error at: ");
 
+	// handle for EOF and ENDLINE CASES
 	if(nextToken == EOF || nextToken == ENDLINE)
 	{
 		for (int y = place_count; 1; y--){
